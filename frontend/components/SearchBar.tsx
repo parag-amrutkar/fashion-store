@@ -1,9 +1,12 @@
 'use client'
 
 import * as React from "react"
+import { createPortal } from "react-dom"
+import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Kbd, KbdGroup } from "@/components/ui/kbd"
+import { Separator } from "@/components/ui/separator"
 
 export interface SearchBarProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -14,7 +17,8 @@ export interface SearchBarProps
 }
 
 /**
- * SearchBar renders a liquid glass search input with a Cmd+I shortcut hint.
+ * SearchBar renders a liquid glass search trigger that
+ * expands into a full-screen search workspace with Cmd+I.
  */
 export function SearchBar({
   className,
@@ -25,17 +29,17 @@ export function SearchBar({
   ...props
 }: SearchBarProps) {
   const inputRef = React.useRef<HTMLInputElement>(null)
-  const [isFocused, setIsFocused] = React.useState(false)
+  const [isOverlayOpen, setIsOverlayOpen] = React.useState(false)
+  const [isMounted, setIsMounted] = React.useState(false)
 
   const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => {
-    setIsFocused(true)
+    setIsOverlayOpen(true)
     if (onFocus) {
       onFocus(event)
     }
   }
 
   const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
-    setIsFocused(false)
     if (onBlur) {
       onBlur(event)
     }
@@ -49,7 +53,14 @@ export function SearchBar({
 
       if (isModifierPressed && isIKey) {
         event.preventDefault()
+        setIsOverlayOpen(true)
         inputRef.current?.focus()
+        return
+      }
+
+      if (event.key === "Escape") {
+        setIsOverlayOpen(false)
+        inputRef.current?.blur()
       }
     }
 
@@ -57,38 +68,214 @@ export function SearchBar({
     return () => window.removeEventListener("keydown", handleKeyDown)
   }, [])
 
-  return (
-    <div
-      className={cn(
-        "relative flex items-center rounded-full border border-border/40 bg-background/40 px-3 py-1",
-        "shadow-sm backdrop-blur-md",
-        "focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/30",
-        containerClassName
-      )}
-    >
-      <input
-        ref={inputRef}
-        type={type}
-        placeholder="Search"
-        className={cn(
-          "h-9 w-full border-none bg-transparent px-0 text-m leading-none text-foreground",
-          "placeholder:text-foreground",
-          "focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
-          "pr-16",
-          className
-        )}
-        aria-label={props["aria-label"] ?? "Search"}
-        {...props}
-        onFocus={handleFocus}
-        onBlur={handleBlur}
-      />
-      {!isFocused && (
-        <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-          <KbdGroup>
-            <Kbd>⌘ I</Kbd>
-          </KbdGroup>
+  React.useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
+  /**
+   * Closes the search overlay and blurs the trigger input.
+   */
+  const closeOverlay = () => {
+    setIsOverlayOpen(false)
+    inputRef.current?.blur()
+  }
+
+  /**
+   * Handles clicks on the dimmed backdrop to exit search mode.
+   */
+  const handleBackdropClick = () => {
+    closeOverlay()
+  }
+
+  let overlay: React.ReactPortal | null = null
+  if (isOverlayOpen && isMounted) {
+    overlay = createPortal(
+      <div
+        className="fixed inset-0 z-40 flex justify-center bg-background/40 backdrop-blur-xl transition-opacity duration-150"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Search workspace"
+        onClick={handleBackdropClick}
+      >
+        <div
+          className="pointer-events-auto flex w-full max-w-6xl flex-col px-4 pb-8 pt-24 md:px-6"
+          onClick={(event) => event.stopPropagation()}
+        >
+          <div className="relative flex h-[min(640px,calc(100vh-128px))] flex-1 overflow-hidden rounded-3xl border border-border/60 bg-background/70 shadow-2xl backdrop-blur-2xl">
+            <div className="pointer-events-none absolute inset-y-6 left-[33.333%] hidden lg:block">
+              <Separator orientation="vertical" className="h-full" />
+            </div>
+
+            <div className="grid h-full w-full grid-cols-12 gap-0">
+              <section className="col-span-12 flex flex-col justify-between px-6 py-6 lg:col-span-4">
+                <div className="space-y-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-foreground/60">
+                    Search
+                  </p>
+                  <h2 className="text-2xl font-semibold tracking-tight">
+                    Find your next look
+                  </h2>
+                  <p className="text-sm text-foreground/70">
+                    Explore outfits, brands, and styles. Use the search
+                    tools on the right or start typing below.
+                  </p>
+                </div>
+                <div className="mt-8 space-y-3 text-sm text-foreground/70">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
+                    Recently searched
+                  </p>
+                  <div className="space-y-1">
+                    <div className="inline-flex rounded-full bg-background/80 px-3 py-1">
+                      Tailored blazer
+                    </div>
+                    <div className="inline-flex rounded-full bg-background/80 px-3 py-1">
+                      Minimal sneakers
+                    </div>
+                    <div className="inline-flex rounded-full bg-background/80 px-3 py-1">
+                      Silk evening dress
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <div className="col-span-12 flex flex-col px-6 py-6 lg:col-span-8">
+                <section className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-medium tracking-tight">
+                      Trending products
+                    </h3>
+                    <span className="text-xs text-foreground/60">
+                      Live right now
+                    </span>
+                  </div>
+                  <div className="mt-4 grid h-full grid-cols-2 gap-3 overflow-y-auto text-sm">
+                    <div className="rounded-2xl bg-background/70 p-3 shadow-sm">
+                      Sculpted denim jacket
+                    </div>
+                    <div className="rounded-2xl bg-background/70 p-3 shadow-sm">
+                      Monochrome capsule set
+                    </div>
+                    <div className="rounded-2xl bg-background/70 p-3 shadow-sm">
+                      Leather city boots
+                    </div>
+                    <div className="rounded-2xl bg-background/70 p-3 shadow-sm">
+                      Weekender tote bag
+                    </div>
+                  </div>
+                </section>
+
+                <Separator className="my-4" />
+
+                <div className="flex flex-1 flex-col gap-4">
+                  <section className="flex-1">
+                    <h3 className="text-sm font-medium tracking-tight">
+                      Suggested queries
+                    </h3>
+                    <div className="mt-3 flex flex-wrap gap-2 text-sm">
+                      {[
+                        "Summer linen edit",
+                        "Office-ready essentials",
+                        "Occasion dresses",
+                        "Streetwear drops",
+                        "Understated luxury",
+                      ].map((query) => (
+                        <button
+                          key={query}
+                          type="button"
+                          className="rounded-full border border-border/50 bg-background/60 px-3 py-1 text-xs text-foreground/80 shadow-sm backdrop-blur-md transition hover:border-border hover:bg-background"
+                        >
+                          {query}
+                        </button>
+                      ))}
+                    </div>
+                  </section>
+
+                  <Separator />
+
+                  <section className="flex items-center">
+                    <div
+                      className={cn(
+                        "flex w-full items-center rounded-full border border-border/40 bg-background/70 px-4 py-2",
+                        "shadow-sm backdrop-blur-md focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/30"
+                      )}
+                    >
+                      <input
+                        type={type}
+                        placeholder="Search products, brands, and styles"
+                        className={cn(
+                          "h-10 w-full border-none bg-transparent text-sm text-foreground",
+                          "placeholder:text-foreground/70",
+                          "focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                        )}
+                        autoFocus
+                        aria-label="Search products"
+                      />
+                      <div className="ml-3 flex items-center gap-2 text-[11px] text-foreground/60">
+                        <span className="hidden sm:inline">
+                          Press
+                        </span>
+                        <KbdGroup>
+                          <Kbd>Esc</Kbd>
+                        </KbdGroup>
+                        <span className="hidden sm:inline">to close</span>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeOverlay}
+                className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs font-medium text-foreground/80 shadow-sm backdrop-blur-md transition hover:bg-background"
+              >
+                <span className="hidden sm:inline">Esc</span>
+                <span className="sm:hidden">Close</span>
+                <X className="h-3 w-3" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
         </div>
-      )}
-    </div>
+      </div>,
+      document.body
+    )
+  }
+
+  return (
+    <React.Fragment>
+      <div
+        className={cn(
+          "relative z-50 flex items-center rounded-full border border-border/40 bg-background/40 px-3 py-1",
+          "shadow-sm backdrop-blur-md",
+          "focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/30",
+          containerClassName
+        )}
+      >
+        <input
+          ref={inputRef}
+          type={type}
+          placeholder="Search"
+          className={cn(
+            "h-9 w-full border-none bg-transparent px-0 text-m leading-none text-foreground",
+            "placeholder:text-foreground",
+            "focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
+            "pr-16",
+            className
+          )}
+          aria-label={props["aria-label"] ?? "Search"}
+          {...props}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+        />
+        {!isOverlayOpen && (
+          <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+            <KbdGroup>
+              <Kbd>⌘ I</Kbd>
+            </KbdGroup>
+          </div>
+        )}
+      </div>
+      {overlay}
+    </React.Fragment>
   )
 }
