@@ -7,6 +7,7 @@ import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Kbd, KbdGroup } from "@/components/ui/kbd"
 import { Separator } from "@/components/ui/separator"
+import { ScrollArea } from "./ui/scroll-area"
 
 export interface SearchBarProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -15,6 +16,10 @@ export interface SearchBarProps
    */
   containerClassName?: string
 }
+
+const tags = Array.from({ length: 50 }).map(
+  (_, i, a) => `v1.2.0-beta.${a.length - i}`
+)
 
 /**
  * SearchBar renders a liquid glass search trigger that
@@ -98,79 +103,43 @@ export function SearchBar({
         onClick={handleBackdropClick}
       >
         <div
-          className="pointer-events-auto flex w-full max-w-6xl flex-col px-4 pb-8 pt-24 md:px-6"
+          className="pointer-events-auto flex w-full flex-col px-4 pb-8 pt-24 md:px-6"
           onClick={(event) => event.stopPropagation()}
         >
           <div className="relative flex h-[min(640px,calc(100vh-128px))] flex-1 overflow-hidden rounded-3xl border border-border/60 bg-background/70 shadow-2xl backdrop-blur-2xl">
-            <div className="pointer-events-none absolute inset-y-6 left-[33.333%] hidden lg:block">
+            <div className="pointer-events-none absolute inset-y-6 left-[16.67%] hidden lg:block">
               <Separator orientation="vertical" className="h-full" />
             </div>
 
             <div className="grid h-full w-full grid-cols-12 gap-0">
-              <section className="col-span-12 flex flex-col justify-between px-6 py-6 lg:col-span-4">
-                <div className="space-y-4">
-                  <p className="text-xs font-medium uppercase tracking-wide text-foreground/60">
-                    Search
-                  </p>
-                  <h2 className="text-2xl font-semibold tracking-tight">
-                    Find your next look
-                  </h2>
-                  <p className="text-sm text-foreground/70">
-                    Explore outfits, brands, and styles. Use the search
-                    tools on the right or start typing below.
-                  </p>
-                </div>
-                <div className="mt-8 space-y-3 text-sm text-foreground/70">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
-                    Recently searched
-                  </p>
-                  <div className="space-y-1">
-                    <div className="inline-flex rounded-full bg-background/80 px-3 py-1">
-                      Tailored blazer
-                    </div>
-                    <div className="inline-flex rounded-full bg-background/80 px-3 py-1">
-                      Minimal sneakers
-                    </div>
-                    <div className="inline-flex rounded-full bg-background/80 px-3 py-1">
-                      Silk evening dress
-                    </div>
+              <div className="col-span-12 flex flex-col p-6 lg:col-span-2 space-y-4">
+                <h2 className="text-sm font-medium uppercase tracking-wide text-foreground/60">
+                  Recently Searched
+                </h2>
+                <Separator />
+                <ScrollArea className="h-full w-full">
+                  <div>
+                    <div className="text-sm py-2">Tailored blazer</div>
+                    <div className="text-sm py-2">Minimal sneakers</div>
+                    <div className="text-sm py-2">Silk evening dress</div>
                   </div>
-                </div>
-              </section>
+                </ScrollArea>
+              </div>
 
-              <div className="col-span-12 flex flex-col px-6 py-6 lg:col-span-8">
+              <div className="col-span-12 flex flex-col px-6 py-6 lg:col-span-10">
                 <section className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-medium tracking-tight">
+                  <div className="flex">
+                    <h2 className="text-sm font-medium uppercase tracking-wide text-foreground/60">
                       Trending products
-                    </h3>
-                    <span className="text-xs text-foreground/60">
-                      Live right now
-                    </span>
-                  </div>
-                  <div className="mt-4 grid h-full grid-cols-2 gap-3 overflow-y-auto text-sm">
-                    <div className="rounded-2xl bg-background/70 p-3 shadow-sm">
-                      Sculpted denim jacket
-                    </div>
-                    <div className="rounded-2xl bg-background/70 p-3 shadow-sm">
-                      Monochrome capsule set
-                    </div>
-                    <div className="rounded-2xl bg-background/70 p-3 shadow-sm">
-                      Leather city boots
-                    </div>
-                    <div className="rounded-2xl bg-background/70 p-3 shadow-sm">
-                      Weekender tote bag
-                    </div>
+                    </h2>
                   </div>
                 </section>
 
-                <Separator className="my-4" />
-
-                <div className="flex flex-1 flex-col gap-4">
+                <div className="flex flex-1 flex-col">
                   <section className="flex-1">
-                    <h3 className="text-sm font-medium tracking-tight">
+                    <h2 className="text-sm font-medium uppercase tracking-wide text-foreground/60">
                       Suggested queries
-                    </h3>
+                    </h2>
                     <div className="mt-3 flex flex-wrap gap-2 text-sm">
                       {[
                         "Summer linen edit",
@@ -190,7 +159,7 @@ export function SearchBar({
                     </div>
                   </section>
 
-                  <Separator />
+
 
                   <section className="flex items-center">
                     <div
@@ -210,15 +179,7 @@ export function SearchBar({
                         autoFocus
                         aria-label="Search products"
                       />
-                      <div className="ml-3 flex items-center gap-2 text-[11px] text-foreground/60">
-                        <span className="hidden sm:inline">
-                          Press
-                        </span>
-                        <KbdGroup>
-                          <Kbd>Esc</Kbd>
-                        </KbdGroup>
-                        <span className="hidden sm:inline">to close</span>
-                      </div>
+
                     </div>
                   </section>
                 </div>
@@ -229,8 +190,6 @@ export function SearchBar({
                 onClick={closeOverlay}
                 className="absolute right-4 top-4 inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs font-medium text-foreground/80 shadow-sm backdrop-blur-md transition hover:bg-background"
               >
-                <span className="hidden sm:inline">Esc</span>
-                <span className="sm:hidden">Close</span>
                 <X className="h-3 w-3" aria-hidden="true" />
               </button>
             </div>
