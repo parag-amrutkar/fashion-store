@@ -17,9 +17,13 @@ export interface SearchBarProps
   containerClassName?: string
 }
 
-const tags = Array.from({ length: 50 }).map(
-  (_, i, a) => `v1.2.0-beta.${a.length - i}`
-)
+const suggestedQueries = [
+  "Summer linen edit",
+  "Office-ready essentials",
+  "Occasion dresses",
+  "Streetwear drops",
+  "Understated luxury",
+]
 
 /**
  * SearchBar renders a liquid glass search trigger that
@@ -140,21 +144,19 @@ export function SearchBar({
                     <h2 className="text-sm font-medium uppercase tracking-wide text-foreground/60">
                       Suggested queries
                     </h2>
-                    <div className="mt-3 flex flex-wrap gap-2 text-sm">
-                      {[
-                        "Summer linen edit",
-                        "Office-ready essentials",
-                        "Occasion dresses",
-                        "Streetwear drops",
-                        "Understated luxury",
-                      ].map((query) => (
-                        <button
-                          key={query}
-                          type="button"
-                          className="rounded-full border border-border/50 bg-background/60 px-3 py-1 text-xs text-foreground/80 shadow-sm backdrop-blur-md transition hover:border-border hover:bg-background"
-                        >
-                          {query}
-                        </button>
+                    <div className="mt-1 flex flex-col overflow-hidden">
+                      {suggestedQueries.map((query, index) => (
+                        <React.Fragment key={query}>
+                          <button
+                            type="button"
+                            className="w-full px-4 py-2 text-left text-base text-foreground/85 transition hover:bg-foreground/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                          >
+                            {query}
+                          </button>
+                          {index < suggestedQueries.length - 1 && (
+                            <Separator className="bg-border/70" />
+                          )}
+                        </React.Fragment>
                       ))}
                     </div>
                   </section>
@@ -164,8 +166,8 @@ export function SearchBar({
                   <section className="flex items-center">
                     <div
                       className={cn(
-                        "flex w-full items-center rounded-full border border-border/40 bg-background/70 px-4 py-2",
-                        "shadow-sm backdrop-blur-md focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/30"
+                        "flex w-full items-center rounded-sm bg-background/70 px-4 py-2",
+                        "shadow-sm backdrop-blur-md focus-within:border-primary/60 focus-within:ring-1 focus-within:ring-primary/30"
                       )}
                     >
                       <input
