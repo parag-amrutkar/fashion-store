@@ -3,8 +3,17 @@
 import * as React from "react"
 import { createPortal } from "react-dom"
 import { X } from "lucide-react"
+import Image from "next/image"
 
 import { cn } from "@/lib/utils"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
 import { Kbd, KbdGroup } from "@/components/ui/kbd"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "./ui/scroll-area"
@@ -21,8 +30,30 @@ const suggestedQueries = [
   "Summer linen edit",
   "Office-ready essentials",
   "Occasion dresses",
-  "Streetwear drops",
-  "Understated luxury",
+]
+
+type TrendingProduct = {
+  name: string
+  price: string
+  product_image_url: string
+}
+
+const trendingProducts: TrendingProduct[] = [
+  {
+    name: "Architectural denim jacket",
+    price: "$240",
+    product_image_url: "https://cdn.shopify.com/s/files/1/0249/7784/files/OriginTee-FoggyTaupe-102142-022-010_1000x.jpg?v=1754185903&format=webp",
+  },
+  {
+    name: "Column satin maxi dress",
+    price: "$320",
+    product_image_url: "https://cdn.shopify.com/s/files/1/0249/7784/files/OriginTee-FoggyTaupe-102142-022-010_1000x.jpg?v=1754185903&format=webp",
+  },
+  {
+    name: "Tonal rib knit set",
+    price: "$180",
+    product_image_url: "https://cdn.shopify.com/s/files/1/0249/7784/files/OriginTee-FoggyTaupe-102142-022-010_1000x.jpg?v=1754185903&format=webp",
+  },
 ]
 
 /**
@@ -131,11 +162,38 @@ export function SearchBar({
               </div>
 
               <div className="col-span-12 flex flex-col px-6 py-6 lg:col-span-10">
-                <section className="flex-1">
-                  <div className="flex">
+                <section className="mb-6">
+                  <div className="flex items-center justify-between gap-3 mb-3">
                     <h2 className="text-sm font-medium uppercase tracking-wide text-foreground/60">
                       Trending products
                     </h2>
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+                    {trendingProducts.map((product) => (
+                      <Card
+                        key={product.name}
+                        className="group h-full border-border/60 bg-background/70 transition hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-lg py-2 gap-2"
+                      >
+                        <CardContent className="px-2 py-0">
+                          <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-foreground/5">
+                            <Image
+                              src={product.product_image_url}
+                              alt={`${product.name}`}
+                              fill
+                              sizes="(min-width: 1280px) 14vw, (min-width: 640px) 30vw, 50vw"
+                              className="object-cover transition duration-300 group-hover:scale-[1.03]"
+                              priority
+                            />
+                          </div>
+                        </CardContent>
+                        <CardFooter className="px-2 flex-col grid justify-items-start">
+                          <p>{product.name}</p>
+                          <p>{product.price}</p>
+                        </CardFooter>
+                        {/* <CardTitle className="text-base leading-tight">{product.name}</CardTitle>
+                          <span className="text-sm font-semibold text-foreground">{product.price}</span> */}
+                      </Card>
+                    ))}
                   </div>
                 </section>
 
@@ -161,8 +219,6 @@ export function SearchBar({
                     </div>
                   </section>
 
-
-
                   <section className="flex items-center">
                     <div
                       className={cn(
@@ -172,7 +228,7 @@ export function SearchBar({
                     >
                       <input
                         type={type}
-                        placeholder="Search products, brands, and styles"
+                        placeholder="Ask products, brands, and styles"
                         className={cn(
                           "h-10 w-full border-none bg-transparent text-sm text-foreground",
                           "placeholder:text-foreground/70",
@@ -217,7 +273,7 @@ export function SearchBar({
           type={type}
           placeholder="Search"
           className={cn(
-            "h-9 w-full border-none bg-transparent px-0 text-m leading-none text-foreground",
+            "h-9 w-full border-none bg-transparent px-0 text-sm leading-none text-foreground",
             "placeholder:text-foreground",
             "focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0",
             "pr-16",
