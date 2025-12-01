@@ -190,8 +190,6 @@ export function SearchBar({
                           <p>{product.name}</p>
                           <p>{product.price}</p>
                         </CardFooter>
-                        {/* <CardTitle className="text-base leading-tight">{product.name}</CardTitle>
-                          <span className="text-sm font-semibold text-foreground">{product.price}</span> */}
                       </Card>
                     ))}
                   </div>
